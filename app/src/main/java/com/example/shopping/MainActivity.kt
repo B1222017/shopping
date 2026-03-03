@@ -24,17 +24,21 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
 
                     NavHost(navController = navController, startDestination = "main_list") {
-                        // 1. 購物清單主頁
+                        // 1. 購物清單主頁 (包含各個分頁)
                         composable("main_list") {
                             MainContainer(navController)
                         }
-                        // 2. 夥伴做的導航輸入頁
+                        // 2. 導航目標確認頁
                         composable("teammate_home") {
                             TeammateHomeScreen(navController)
                         }
                         // 3. AR 導航相機畫面
                         composable("ar_navigation") {
                             NavigationScreen(navController)
+                        }
+                        // 4. 設定頁面
+                        composable("settings") {
+                            SettingsScreen(navController)
                         }
                     }
                 }
