@@ -35,6 +35,7 @@ fun ShoppingListScreen(
 ) {
     var itemName by remember { mutableStateOf("") }
     var itemPrice by remember { mutableStateOf("") }
+    var itemStore by remember { mutableStateOf("") } // 新增：地點輸入
     var selectedDueDate by remember { mutableStateOf<Long?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
@@ -72,12 +73,23 @@ fun ShoppingListScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(value = itemName, onValueChange = { itemName = it }, label = { Text("商品名稱") }, modifier = Modifier.weight(1.5f), shape = RoundedCornerShape(12.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     OutlinedTextField(value = itemPrice, onValueChange = { itemPrice = it }, label = { Text("單價") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp))
                 }
+                
+                // 新增：選擇店家/地點輸入
+                OutlinedTextField(
+                    value = itemStore, 
+                    onValueChange = { itemStore = it }, 
+                    label = { Text("購買地點 (例如: 全聯、家樂福)") }, 
+                    modifier = Modifier.fillMaxWidth(), 
+                    shape = RoundedCornerShape(12.dp),
+                    leadingIcon = { Icon(Icons.Default.Store, null) }
+                )
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = { showDatePicker = true }, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Default.DateRange, null, modifier = Modifier.size(18.dp))
@@ -85,8 +97,13 @@ fun ShoppingListScreen(
                     }
                     Button(onClick = {
                         if (itemName.isNotBlank()) {
-                            onItemsUpdate(items + ShoppingItem(name = itemName, price = itemPrice.toIntOrNull() ?: 0, dueDate = selectedDueDate))
-                            itemName = ""; itemPrice = ""; selectedDueDate = null
+                            onItemsUpdate(items + ShoppingItem(
+                                name = itemName, 
+                                price = itemPrice.toIntOrNull() ?: 0, 
+                                dueDate = selectedDueDate,
+                                storeName = itemStore.ifBlank { null }
+                            ))
+                            itemName = ""; itemPrice = ""; itemStore = ""; selectedDueDate = null
                         }
                     }) { Text("加入清單") }
                 }
@@ -119,14 +136,19 @@ fun ShoppingListScreen(
 fun ShoppingItemRow(item: ShoppingItem, allItems: List<ShoppingItem>, onItemsUpdate: (List<ShoppingItem>) -> Unit, dateOnlySdf: SimpleDateFormat) {
     ListItem(
         headlineContent = {
-            OutlinedTextField(
-                value = item.name,
-                onValueChange = { newName -> onItemsUpdate(allItems.map { if (it.id == item.id) it.copy(name = newName) else it }) },
-                modifier = Modifier.fillMaxWidth(),
-                textStyle = if (item.isChecked) LocalTextStyle.current.copy(textDecoration = TextDecoration.LineThrough, color = Color.Gray) else LocalTextStyle.current,
-                colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = Color.Transparent, focusedBorderColor = MaterialTheme.colorScheme.primary),
-                singleLine = true
-            )
+            Column {
+                if (!item.storeName.isNullOrBlank()) {
+                    Text(item.storeName!!, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                }
+                OutlinedTextField(
+                    value = item.name,
+                    onValueChange = { newName -> onItemsUpdate(allItems.map { if (it.id == item.id) it.copy(name = newName) else it }) },
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = if (item.isChecked) LocalTextStyle.current.copy(textDecoration = TextDecoration.LineThrough, color = Color.Gray) else LocalTextStyle.current,
+                    colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = Color.Transparent, focusedBorderColor = MaterialTheme.colorScheme.primary),
+                    singleLine = true
+                )
+            }
         },
         supportingContent = {
             Row(verticalAlignment = Alignment.CenterVertically) {
