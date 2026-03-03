@@ -1,21 +1,48 @@
-package com.example.shopping.model
+package com.example.shopping
 
-import java.util.*
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.shopping.model.*
+import com.example.shopping.ui.screens.*
 
-data class ShoppingItem(
-    val id: String = UUID.randomUUID().toString(),
-    var name: String,
-    var qty: Int = 1,
-    var price: Int = 0,
-    var isChecked: Boolean = false,
-    val createdAt: Long = System.currentTimeMillis(),
-    var purchasedAt: Long? = null,
-    val dueDate: Long? = null
-)
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            MaterialTheme {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    val navController = rememberNavController()
 
-data class PaymentReminder(
-    val store: String,
-    val text: String,
-    val amount: Int,
-    val dueDate: String
-)
+                    NavHost(navController = navController, startDestination = "main_list") {
+                        // 1. 購物清單主頁 (包含各個分頁)
+                        composable("main_list") {
+                            MainContainer(navController)
+                        }
+                        // 2. 導航目標確認頁
+                        composable("teammate_home") {
+                            TeammateHomeScreen(navController)
+                        }
+                        // 3. AR 導航相機畫面
+                        composable("ar_navigation") {
+                            NavigationScreen(navController)
+                        }
+                        // 4. 設定頁面
+                        composable("settings") {
+                            SettingsScreen(navController)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
